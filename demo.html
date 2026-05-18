@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCS CRM Demo</title>
+<style>
+:root{
+  --bg:#F5F2EE;
+  --surface:#FFFFFF;
+  --surface-alt:#F8F5F1;
+  --surface-strong:#EDE7E2;
+  --border:#D8D2CA;
+  --text:#242424;
+  --text-muted:#6C6C6C;
+  --accent:#912338;
+  --accent-soft:#F2E5E7;
+  --success:#0E8B6D;
+  --success-soft:#DFF4EF;
+  --warning:#AA6900;
+  --warning-soft:#FFF3D4;
+  --danger:#C0392B;
+  --danger-soft:#FDECEA;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 16px 50px rgba(0,0,0,0.08);
+  --shadow-soft:0 8px 24px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);}
+button, input, select, textarea{font:inherit;}
+.page{display:grid;grid-template-columns:240px 1fr;min-height:100vh;gap:20px;padding:20px;}
+.sidebar{background:linear-gradient(180deg,#3D1520 0%,#2A0F17 100%);border-radius:24px;padding:24px;color:white;display:flex;flex-direction:column;gap:22px;}
+.brand{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;}
+.brand-title{font-size:22px;font-weight:800;margin-top:8px;}
+.nav{display:flex;flex-direction:column;gap:8px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;transition:background .2s;color:rgba(255,255,255,.82);cursor:pointer;}
+.nav-item.active, .nav-item:hover{background:rgba(255,255,255,0.12);color:white;}
+.nav-item span{font-size:13px;}
+.main{display:flex;flex-direction:column;gap:18px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:22px 26px;border-radius:24px;background:var(--surface);box-shadow:var(--shadow-soft);border:1px solid var(--border);}
+.topbar h1{margin:0;font-size:20px;letter-spacing:-.02em;}
+.topbar-actions{display:flex;align-items:center;gap:12px;}
+.search{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;border:1px solid var(--border);background:var(--surface-alt);width:320px;}
+.search input{border:none;outline:none;width:100%;background:transparent;color:var(--text);}
+.user-chip{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface-alt);}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:#D48B9B;display:grid;place-items:center;color:white;font-weight:700;}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;}
+.panel{background:var(--surface);border-radius:24px;box-shadow:var(--shadow-soft);border:1px solid var(--border);padding:24px;}
+.notifications{display:grid;grid-template-columns:1fr;gap:14px;}
+.notification-card{display:flex;align-items:flex-start;gap:14px;padding:18px;border-radius:20px;background:var(--surface-alt);border:1px solid var(--border);}
+.notification-card strong{display:block;margin-bottom:4px;}
+.notification-card .pill{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.notification-card .pill.success{background:var(--success-soft);color:var(--success);} 
+.notification-card .pill.warning{background:var(--warning-soft);color:var(--warning);} 
+.notification-card .pill.danger{background:var(--danger-soft);color:var(--danger);} 
+.notification-card button{margin-left:auto;padding:8px 12px;border:none;border-radius:12px;background:var(--accent);color:white;cursor:pointer;}
+.notification-card button:hover{opacity:.94;}
+.status-strip{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.status-card{flex:1;min-width:180px;padding:18px;border-radius:18px;background:var(--surface-alt);border:1px solid var(--border);box-shadow:var(--shadow-soft);}
+.status-card h2{margin:0 0 10px;font-size:14px;color:var(--text-muted);}
+.status-card p{margin:0;font-size:24px;font-weight:700;}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+.column{background:var(--surface-alt);border:1px solid var(--border);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:420px;}
+.column-heading{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.column-heading strong{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);}
+.column-count{padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-muted);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:12px;}
+.card-title{font-size:15px;font-weight:700;}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;color:var(--text-muted);font-size:13px;}
+.tag{padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.card-footer small{color:var(--text-muted);}
+.card-badge{padding:6px 10px;border-radius:12px;background:var(--warning-soft);color:var(--warning);font-size:12px;font-weight:700;}
+.toast-demo{position:fixed;right:24px;bottom:24px;display:grid;gap:12px;z-index:1000;}
+.toast{display:flex;align-items:center;gap:12px;padding:16px 20px;border-radius:18px;background:rgba(255,255,255,0.95);border:1px solid rgba(28,20,17,0.08);box-shadow:var(--shadow);min-width:320px;}
+.toast strong{font-size:14px;}
+.toast p{margin:0;color:var(--text-muted);font-size:13px;line-height:1.5;}
+.toast.success{border-color:rgba(14,139,109,.18);}
+.toast.success .dot{background:var(--success);} 
+.toast.warning{border-color:rgba(170,105,0,.18);}
+.toast.warning .dot{background:var(--warning);} 
+.toast.error{border-color:rgba(192,57,43,.18);}
+.toast.error .dot{background:var(--danger);} 
+.toast .dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.toast .action{margin-left:auto;padding:8px 14px;border:none;border-radius:12px;background:var(--accent);color:white;cursor:pointer;}
+.toast .action:hover{opacity:.95;}
+@media(max-width:1180px){.page{grid-template-columns:1fr;}} 
+@media(max-width:860px){.kanban{grid-template-columns:1fr;}.topbar{flex-direction:column;align-items:flex-start;}} 
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div>
+      <div class="brand">GCS PARTNERSHIP CRM</div>
+      <div class="brand-title">Demo layout</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active"><span>Pipeline</span></div>
+      <div class="nav-item"><span>Calendar</span></div>
+      <div class="nav-item"><span>Contacts</span></div>
+      <div class="nav-item"><span>Companies</span></div>
+      <div class="nav-item"><span>Requests</span></div>
+      <div class="nav-item"><span>Settings</span></div>
+    </nav>
+    <div class="notification-card" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);">
+      <div style="display:grid;gap:10px;">
+        <strong>Manager</strong>
+        <span style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.5;">Role-based panels, notifications and pipeline health.</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="topbar">
+      <div>
+        <h1>Pipeline overview</h1>
+        <p style="margin:6px 0 0;color:var(--text-muted);font-size:14px;">Smoother load, deferred data, and smarter alerts.</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="search"><span>🔍</span><input placeholder="Search opportunities, contacts, companies"></div>
+        <div class="user-chip"><div class="user-avatar">PL</div><div>Pascal L.</div></div>
+      </div>
+    </section>
+
+    <div class="status-strip">
+      <div class="status-card"><h2>Pipeline value</h2><p>$3.8M</p></div>
+      <div class="status-card"><h2>Signed this month</h2><p>5</p></div>
+      <div class="status-card"><h2>Overdue follow-ups</h2><p>3</p></div>
+    </div>
+
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div><strong style="font-size:16px;">Financial model</strong><div style="margin-top:4px;color:var(--text-muted);font-size:13px;">Default deal finance mode: duration × annual revenue = total.</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div style="display:grid;gap:12px;">
+          <label style="font-size:13px;color:var(--text-muted);">Duration (years)</label>
+          <input style="padding:14px 16px;border-radius:16px;border:1px solid var(--border);" value="3">
+          <label style="font-size:13px;color:var(--text-muted);">Annual revenue ($/year)</label>
+          <input style="padding:14px 16px;border-radius:16px;border:1px solid var(--border);" value="120000">
+          <label style="font-size:13px;color:var(--text-muted);">Total ($)</label>
+          <input style="padding:14px 16px;border-radius:16px;border:1px solid var(--border);" value="$360,000" disabled>
+        </div>
+        <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:20px;padding:20px;">
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">What the app now shows</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:6px;">3 years · $120k / year</div>
+          <div style="font-size:24px;font-weight:800;color:var(--accent);">Total $360,000</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="notifications panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div><strong style="font-size:16px;">Alerts & actions</strong><div style="margin-top:4px;color:var(--text-muted);font-size:13px;">A cleaner alert tray with category tags and direct action links.</div></div>
+        <button style="border:none;border-radius:12px;padding:10px 16px;background:var(--accent);color:white;cursor:pointer;">Review alerts</button>
+      </div>
+      <div class="notifications">
+        <div class="notification-card">
+          <div><strong>Overdue follow-up</strong><span>Opportunity needs contact in 2 days.</span></div>
+          <span class="pill danger">Urgent</span>
+          <button>Open</button>
+        </div>
+        <div class="notification-card">
+          <div><strong>Live sync issue</strong><span>Realtime update failed. Trying again in background.</span></div>
+          <span class="pill warning">Sync</span>
+          <button>Retry</button>
+        </div>
+        <div class="notification-card">
+          <div><strong>New request received</strong><span>Professor partnership form submitted, review pending.</span></div>
+          <span class="pill success">New</span>
+          <button>View</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div><strong style="font-size:16px;">Kanban pipeline</strong><div style="margin-top:4px;color:var(--text-muted);font-size:13px;">Smaller initial load, dynamic rendering, and inline stage actions.</div></div>
+        <button style="border:none;border-radius:14px;padding:12px 18px;background:var(--accent);color:white;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;">New opportunity</button>
+      </div>
+      <div class="kanban">
+        <div class="column"><div class="column-heading"><strong>Prospection</strong><span class="column-count">6</span></div>
+          <div class="card"><div class="card-title">GreenTech Labs</div><div class="card-meta"><span>Prof. A. Leblanc</span><span>Mitacs Accelerate</span></div><div class="card-footer"><small>Follow-up 2d</small><span class="card-badge">High</span></div></div>
+          <div class="card"><div class="card-title">AeroSys</div><div class="card-meta"><span>Dr. M. Tran</span><span>Research</span></div><div class="card-footer"><small>Today</small><span class="tag">Follow-up</span></div></div>
+        </div>
+        <div class="column"><div class="column-heading"><strong>Exploration</strong><span class="column-count">4</span></div>
+          <div class="card"><div class="card-title">EcoDrive</div><div class="card-meta"><span>J. Martin</span><span>Consulting</span></div><div class="card-footer"><small>16h ago</small><span class="tag">Company match</span></div></div>
+        </div>
+        <div class="column"><div class="column-heading"><strong>Proposal</strong><span class="column-count">3</span></div>
+          <div class="card"><div class="card-title">Nova Pharma</div><div class="card-meta"><span>Prof. L. Chen</span><span>Applied R&D</span></div><div class="card-footer"><small>Sent 2d ago</small><span class="tag">Draft</span></div></div>
+        </div>
+        <div class="column"><div class="column-heading"><strong>Signed</strong><span class="column-count">8</span></div>
+          <div class="card"><div class="card-title">OptiCore</div><div class="card-meta"><span>Dr. S. Dubois</span><span>Service Contract</span></div><div class="card-footer"><small>Closed</small><span class="tag">💼</span></div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast-demo">
+  <div class="toast success"><div class="dot"></div><div><strong>Saved successfully</strong><p>Changes to the opportunity were stored and synced.</p></div><button class="action">Undo</button></div>
+  <div class="toast warning"><div class="dot"></div><div><strong>Follow-up due soon</strong><p>Review the flagged opportunity before tomorrow.</p></div><button class="action">Review</button></div>
+  <div class="toast error"><div class="dot"></div><div><strong>Sync failed</strong><p>Realtime updates are offline. Reconnecting…</p></div><button class="action">Retry</button></div>
+</div>
+</body>
+</html>
