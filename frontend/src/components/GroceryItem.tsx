@@ -2,7 +2,6 @@ import { GroceryItem as Item } from '../store'
 import { api } from '../api/client'
 import { useStore } from '../store'
 import { enqueueOfflineAction } from '../hooks/useOfflineCache'
-import { getSocket } from '../hooks/useSocket'
 
 interface Props {
   item: Item
@@ -18,7 +17,6 @@ export default function GroceryItemRow({ item }: Props) {
     if (navigator.onLine) {
       try {
         await api.patch(`/grocery/items/${item.id}/check`, { checked: next })
-        getSocket().emit('grocery:check', { itemId: item.id, checked: next })
       } catch {
         updateGroceryItem(item.id, !next)
       }
