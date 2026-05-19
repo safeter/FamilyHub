@@ -1,7 +1,6 @@
 import { Response } from 'express'
 import { PrismaClient, GroceryCategory } from '@prisma/client'
 import { AuthRequest } from '../middleware/auth'
-import { io } from '../index'
 
 const prisma = new PrismaClient()
 
@@ -14,7 +13,6 @@ export async function checkItem(req: AuthRequest, res: Response) {
     data: { checked },
   })
 
-  io.emit('grocery:item:checked', { itemId: id, checked, checkedBy: req.userName })
   res.json(item)
 }
 
@@ -36,7 +34,6 @@ export async function addItem(req: AuthRequest, res: Response) {
     },
   })
 
-  io.emit('grocery:item:added', { item })
   res.status(201).json(item)
 }
 

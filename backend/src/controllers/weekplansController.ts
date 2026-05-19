@@ -1,7 +1,6 @@
 import { Response } from 'express'
 import { PrismaClient, GroceryCategory } from '@prisma/client'
 import { AuthRequest } from '../middleware/auth'
-import { io } from '../index'
 
 const prisma = new PrismaClient()
 
@@ -64,7 +63,6 @@ export async function updateMeals(req: AuthRequest, res: Response) {
     include: includeMeals,
   })
 
-  io.emit('mealplan:updated', { weekPlanId: id, meals: updated?.meals })
   res.json(updated)
 }
 

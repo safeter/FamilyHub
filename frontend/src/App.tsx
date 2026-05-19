@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useStore } from './store'
-import { useSocket } from './hooks/useSocket'
+import { usePolling } from './hooks/useSocket'
 import { useOfflineCache } from './hooks/useOfflineCache'
 import BottomNav from './components/BottomNav'
 import Login from './pages/Login'
@@ -11,7 +11,7 @@ import GroceryList from './pages/GroceryList'
 import Recipes from './pages/Recipes'
 
 function AppShell() {
-  useSocket()
+  usePolling()
   useOfflineCache()
 
   return (

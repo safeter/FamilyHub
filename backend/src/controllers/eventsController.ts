@@ -1,7 +1,6 @@
 import { Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { AuthRequest } from '../middleware/auth'
-import { io } from '../index'
 
 const prisma = new PrismaClient()
 
@@ -72,7 +71,6 @@ export async function createEvent(req: AuthRequest, res: Response) {
     },
     include: includeUsers,
   })
-  io.emit('event:updated', { event })
   res.status(201).json(event)
 }
 
@@ -92,14 +90,12 @@ export async function updateEvent(req: AuthRequest, res: Response) {
     },
     include: includeUsers,
   })
-  io.emit('event:updated', { event })
   res.json(event)
 }
 
 export async function deleteEvent(req: AuthRequest, res: Response) {
   const { id } = req.params
   await prisma.event.delete({ where: { id } })
-  io.emit('event:updated', { event: { id, deleted: true } })
   res.json({ ok: true })
 }
 

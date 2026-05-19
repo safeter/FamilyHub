@@ -1,50 +1,34 @@
-import { useEffect } from 'react'
-import { io, Socket } from 'socket.io-client'
+import { useEffect, useRef } from 'react'
 import { useStore } from '../store'
+import { api } from '../api/client'
 
-let socket: Socket | null = null
-
-export function getSocket(): Socket {
-  if (!socket) {
-    socket = io('/', { path: '/socket.io', transports: ['websocket'] })
-  }
-  return socket
-}
-
-export function useSocket() {
-  const { updateGroceryItem, addGroceryItem, upsertEvent, setWeekPlan } = useStore()
+export function usePolling() {
+  const token = useStore((s) => s.token)
+  const setWeekEvents = useStore((s) => s.setWeekEvents)
+  const weekPlan = useStore((s) => s.weekPlan)
+  const setGroceryList = useStore((s) => s.setGroceryList)
+  const weekPlanRef = useRef(weekPlan)
+  weekPlanRef.current = weekPlan
 
   useEffect(() => {
-    const s = getSocket()
+    if (!token) return
 
-    s.on('grocery:item:checked', ({ itemId, checked }: { itemId: string; checked: boolean }) => {
-      updateGroceryItem(itemId, checked)
-    })
+    const poll = async () => {
+      try {
+        const events = await api.get<Parameters<typeof setWeekEvents>[0]>('/events/week')
+        setWeekEvents(events)
 
-    s.on('grocery:item:added', ({ item }: { item: Parameters<typeof addGroceryItem>[0] }) => {
-      addGroceryItem(item)
-    })
-
-    s.on('event:updated', ({ event }: { event: Parameters<typeof upsertEvent>[0] & { deleted?: boolean } }) => {
-      if (event.deleted) {
-        useStore.getState().removeEvent(event.id)
-      } else {
-        upsertEvent(event)
+        const plan = weekPlanRef.current
+        if (plan?.id) {
+          const list = await api.get<Parameters<typeof setGroceryList>[0]>(`/weekplans/${plan.id}/grocery`)
+          if (list) setGroceryList(list)
+        }
+      } catch {
+        // ignore polling errors silently
       }
-    })
-
-    s.on('mealplan:updated', ({ weekPlanId, meals }: { weekPlanId: string; meals: unknown[] }) => {
-      const current = useStore.getState().weekPlan
-      if (current?.id === weekPlanId) {
-        setWeekPlan({ ...current, meals: meals as typeof current.meals })
-      }
-    })
-
-    return () => {
-      s.off('grocery:item:checked')
-      s.off('grocery:item:added')
-      s.off('event:updated')
-      s.off('mealplan:updated')
     }
-  }, [updateGroceryItem, addGroceryItem, upsertEvent, setWeekPlan])
+
+    const id = setInterval(poll, 10000)
+    return () => clearInterval(id)
+  }, [token, setWeekEvents, setGroceryList])
 }
