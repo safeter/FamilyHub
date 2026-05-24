@@ -38,6 +38,7 @@ export default function Recipes() {
   const { recipes, setRecipes } = useStore()
   const [editing, setEditing] = useState<Recipe | null | 'new'>(null)
   const [form, setForm] = useState<RecipeForm>(emptyForm())
+  const [pasteMode, setPasteMode] = useState(false)
 
   useEffect(() => {
     api.get<Recipe[]>('/recipes').then(setRecipes)
@@ -45,10 +46,12 @@ export default function Recipes() {
 
   function openNew() {
     setForm(emptyForm())
+    setPasteMode(false)
     setEditing('new')
   }
 
   function openEdit(r: Recipe) {
+    setPasteMode(false)
     setForm({
       name: r.name,
       description: r.description ?? '',
@@ -161,8 +164,34 @@ export default function Recipes() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-white/70">Ingrédients</span>
-                  <button onClick={addIngredient} className="text-primary text-sm">+ Ajouter</button>
+                  <div className="flex gap-3">
+                    <button onClick={() => setPasteMode(true)} className="text-white/50 text-sm">📋 Coller</button>
+                    <button onClick={addIngredient} className="text-primary text-sm">+ Ajouter</button>
+                  </div>
                 </div>
+
+                {pasteMode && (
+                  <div className="mb-3">
+                    <textarea
+                      className="w-full bg-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none h-28 resize-none"
+                      placeholder={"Colle ta liste ici, une ligne par ingrédient :\n500g farine\n3 oeufs\n200ml lait"}
+                      autoFocus
+                      onPaste={(e) => {
+                        e.preventDefault()
+                        const text = e.clipboardData.getData('text')
+                        const parsed = text.split('\n').map(line => line.trim()).filter(Boolean).map(line => {
+                          const match = line.match(/^([\d.,/½¼¾⅓⅔]+\s*(?:g|kg|ml|L|cl|dl|tasse[s]?|cup[s]?|c\. à [sc]\.?|tbsp|tsp|oz|lb|pincée[s]?|tranche[s]?|pc[s]?|unité[s]?)?)\s+(.+)$/i)
+                          if (match) return { quantity: match[1].trim(), name: match[2].trim(), category: 'PANTRY' as GroceryCategory }
+                          return { quantity: '', name: line, category: 'PANTRY' as GroceryCategory }
+                        })
+                        setForm(f => ({ ...f, ingredients: [...f.ingredients.filter(i => i.name), ...parsed] }))
+                        setPasteMode(false)
+                      }}
+                    />
+                    <button onClick={() => setPasteMode(false)} className="text-white/40 text-xs mt-1">Annuler</button>
+                  </div>
+                )}
+
                 {form.ingredients.map((ing, i) => (
                   <div key={i} className="flex gap-2 mb-2">
                     <input

@@ -59,82 +59,88 @@ export default function EventForm({ event, onClose, onSave, onDelete }: Props) {
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end" onClick={onClose}>
       <div
-        className="bg-surface w-full rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto"
+        className="bg-surface w-full rounded-t-2xl flex flex-col"
+        style={{ maxHeight: 'calc(100vh - 64px)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
           <h2 className="text-lg font-bold">{event ? 'Modifier' : 'Nouvel événement'}</h2>
           <button onClick={onClose} className="text-white/50 text-2xl leading-none">×</button>
         </div>
 
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className="text-xs text-white/50 block mb-1">Titre</label>
-            <input
-              value={form.title}
-              onChange={(e) => set('title', e.target.value)}
-              className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-primary"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-white/50 block mb-1">Type</label>
-            <select
-              value={form.type}
-              onChange={(e) => set('type', e.target.value)}
-              className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none"
-            >
-              {types.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+        {/* Scrollable fields */}
+        <form onSubmit={submit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-5 space-y-4 pb-2">
             <div>
-              <label className="text-xs text-white/50 block mb-1">Début</label>
+              <label className="text-xs text-white/50 block mb-1">Titre</label>
               <input
-                type="datetime-local"
-                value={form.startTime}
-                onChange={(e) => set('startTime', e.target.value)}
-                className="w-full bg-white/10 rounded-xl px-3 py-3 focus:outline-none text-sm"
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+                className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-primary"
                 required
               />
             </div>
+
             <div>
-              <label className="text-xs text-white/50 block mb-1">Fin</label>
+              <label className="text-xs text-white/50 block mb-1">Type</label>
+              <select
+                value={form.type}
+                onChange={(e) => set('type', e.target.value)}
+                className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none"
+              >
+                {types.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-white/50 block mb-1">Début</label>
+                <input
+                  type="datetime-local"
+                  value={form.startTime}
+                  onChange={(e) => set('startTime', e.target.value)}
+                  className="w-full bg-white/10 rounded-xl px-3 py-3 focus:outline-none text-sm"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs text-white/50 block mb-1">Fin</label>
+                <input
+                  type="datetime-local"
+                  value={form.endTime}
+                  onChange={(e) => set('endTime', e.target.value)}
+                  className="w-full bg-white/10 rounded-xl px-3 py-3 focus:outline-none text-sm"
+                  required
+                />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer">
               <input
-                type="datetime-local"
-                value={form.endTime}
-                onChange={(e) => set('endTime', e.target.value)}
-                className="w-full bg-white/10 rounded-xl px-3 py-3 focus:outline-none text-sm"
-                required
+                type="checkbox"
+                checked={form.isCritical}
+                onChange={(e) => set('isCritical', e.target.checked)}
+                className="w-5 h-5 rounded accent-red-500"
+              />
+              <span className="text-sm">⚠️ Jour critique</span>
+            </label>
+
+            <div>
+              <label className="text-xs text-white/50 block mb-1">Note d'aide (ex: Maman arrive à 16h)</label>
+              <input
+                value={form.helperNote}
+                onChange={(e) => set('helperNote', e.target.value)}
+                className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none"
+                placeholder="Optionnel"
               />
             </div>
           </div>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.isCritical}
-              onChange={(e) => set('isCritical', e.target.checked)}
-              className="w-5 h-5 rounded accent-red-500"
-            />
-            <span className="text-sm">⚠️ Jour critique</span>
-          </label>
-
-          <div>
-            <label className="text-xs text-white/50 block mb-1">Note d'aide (ex: Maman arrive à 16h)</label>
-            <input
-              value={form.helperNote}
-              onChange={(e) => set('helperNote', e.target.value)}
-              className="w-full bg-white/10 rounded-xl px-4 py-3 focus:outline-none"
-              placeholder="Optionnel"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
+          {/* Sticky buttons */}
+          <div className="flex gap-3 px-5 py-4 border-t border-white/10 shrink-0">
             {onDelete && (
               <button
                 type="button"
